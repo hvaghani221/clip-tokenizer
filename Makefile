@@ -2,7 +2,7 @@
 # and execute exe directly as
 # native Ubuntu clipboard performance of in WSL is very poor
 exe:
-	GOOS=windows go build main.go
+	GOOS=windows go build .
 
 release:
 	goreleaser build --snapshot
