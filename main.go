@@ -28,7 +28,7 @@ type Result[T any] struct {
 }
 
 func clipStream(d time.Duration) <-chan Result[string] {
-	res := make(chan Result[string])
+	res := make(chan Result[string], 5)
 	go func() {
 		prev, _ := clipboard.ReadAll()
 		timer := time.NewTicker(d)
@@ -61,7 +61,7 @@ type TokenResult struct {
 }
 
 func tokeniseStream(clips <-chan Result[string]) <-chan Result[TokenResult] {
-	res := make(chan Result[TokenResult])
+	res := make(chan Result[TokenResult], 5)
 	go func() {
 		for clip := range clips {
 			if clip.Error != nil {
