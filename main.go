@@ -99,7 +99,6 @@ func main() {
 
 	for result := range tokeniseStream(clipStream(Freq)) {
 		if result.Error != nil {
-			fmt.Printf("[ERR] %s\n", result.Error.Error())
 			continue
 		}
 		tr := result.Value
