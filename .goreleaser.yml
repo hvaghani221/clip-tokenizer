@@ -1,0 +1,11 @@
+project_name: tokenizer
+builds:
+  - binary: tokenizer
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+      - 386
