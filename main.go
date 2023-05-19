@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -20,7 +19,7 @@ type (
 
 type model struct {
 	init    bool
-	results []string
+	results []TokenResult
 }
 
 func (m *model) Init() tea.Cmd {
@@ -48,7 +47,9 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "c", "C":
 			m.results = m.results[:0]
 		case "x", "X":
-			m.results = m.results[:len(m.results)-1]
+			if len(m.results) > 0 {
+				m.results = m.results[:len(m.results)-1]
+			}
 		}
 	case validated:
 		go m.streamResult()
@@ -69,7 +70,16 @@ func (m *model) View() string {
 	if !m.init {
 		return "Initialising..." + fmt.Sprint(m.init, m.results)
 	}
-	return strings.Join(m.results, "\n")
+	builder := NewColorBuilder()
+	builder.Grow(len(m.results) * 100)
+	for _, res := range m.results {
+		builder.WriteKeyValue("Token", "%4d", res.Tokens)
+		builder.WriteKeyValue("Words", "%4d", res.Words)
+		builder.WriteKeyValue("Chars", "%5d", res.Chars)
+		builder.WriteKeyValue("Sign", "%q", res.Sign)
+		builder.LineBreak()
+	}
+	return builder.String()
 }
 
 func (m *model) streamResult() {
@@ -77,13 +87,12 @@ func (m *model) streamResult() {
 		if result.Error != nil {
 			continue
 		}
-		tr := result.Value
-		line := fmt.Sprintf("Token: %4d, Words: %4d, Chars: %5d, Signature: %q", tr.Tokens, tr.Words, tr.Chars, tr.Sign)
-		m.results = append(m.results, line)
+		m.results = append(m.results, result.Value)
 	}
 }
 
 func main() {
+	initFunc()
 	file, err := tea.LogToFile("debug.log", "debug")
 	if err != nil {
 		panic(err)
