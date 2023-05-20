@@ -25,27 +25,47 @@ type Result[T any] struct {
 	Error error
 }
 
-func clipStream(d time.Duration) <-chan Result[string] {
+type pipeline struct {
+	freq  time.Duration
+	pause chan struct{}
+}
+
+func NewPipeline(freq time.Duration) *pipeline {
+	return &pipeline{
+		freq:  freq,
+		pause: make(chan struct{}, 1),
+	}
+}
+
+func (p *pipeline) clipStream() <-chan Result[string] {
 	res := make(chan Result[string], 5)
 	go func() {
 		prev, _ := clipboard.ReadAll()
-		timer := time.NewTicker(d)
+		timer := time.NewTicker(p.freq)
 		defer timer.Stop()
-		for range timer.C {
-
-			current, err := clipboard.ReadAll()
-			if err != nil {
-				res <- Result[string]{
-					Error: err,
+		for {
+			select {
+			case <-timer.C:
+				current, err := clipboard.ReadAll()
+				if err != nil {
+					res <- Result[string]{
+						Error: err,
+					}
 				}
+				if current == prev {
+					continue
+				}
+				if strings.TrimSpace(current) == "" {
+					continue
+				}
+				res <- Result[string]{
+					Value: current,
+				}
+				prev = current
+			case <-p.pause:
+				<-p.pause
+				prev, _ = clipboard.ReadAll()
 			}
-			if current == prev {
-				continue
-			}
-			res <- Result[string]{
-				Value: current,
-			}
-			prev = current
 		}
 	}()
 	return res
@@ -58,7 +78,7 @@ type TokenResult struct {
 	Sign   string
 }
 
-func tokeniseStream(clips <-chan Result[string]) <-chan Result[TokenResult] {
+func (p *pipeline) tokeniseStream(clips <-chan Result[string]) <-chan Result[TokenResult] {
 	res := make(chan Result[TokenResult], 5)
 	go func() {
 		cache := NewLRU[string, Result[TokenResult]](16)

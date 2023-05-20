@@ -30,6 +30,10 @@ func (cb *colorBuilder) WriteKeyValue(key string, value string, params ...any) {
 	cb.keyWritten = true
 }
 
+func (cb *colorBuilder) WriteString(str string) {
+	cb.builder.WriteString(str)
+}
+
 func (cb *colorBuilder) LineBreak() {
 	cb.builder.WriteByte('\n')
 	cb.keyWritten = false
