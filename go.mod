@@ -4,10 +4,12 @@ go 1.20
 
 require (
 	github.com/atotto/clipboard v0.1.4
-	github.com/charmbracelet/bubbletea v0.24.0
-	github.com/fatih/color v1.15.0
+	github.com/charmbracelet/bubbles v0.16.1
+	github.com/charmbracelet/bubbletea v0.24.1
+	github.com/charmbracelet/lipgloss v0.7.1
 	github.com/pandodao/tokenizer-go v0.2.0
 	github.com/stretchr/testify v1.8.2
+	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
 )
 
 require (
@@ -20,7 +22,6 @@ require (
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/google/pprof v0.0.0-20230309165930-d61513b1440d // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
-	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.18 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect

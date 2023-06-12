@@ -2,10 +2,13 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/atotto/clipboard"
+	"github.com/charmbracelet/bubbles/table"
 	"github.com/pandodao/tokenizer-go"
 )
 
@@ -15,7 +18,6 @@ var (
 )
 
 func initFunc() {
-	flag.IntVar(&SignLen, "signlen", 60, "Length of the signature")
 	flag.DurationVar(&Freq, "freq", time.Millisecond*17, "Clipboard fetch frequency")
 	flag.Parse()
 }
@@ -76,6 +78,16 @@ type TokenResult struct {
 	Words  int
 	Chars  int
 	Sign   string
+	Clip   string
+}
+
+func (tr TokenResult) ToTableRow() table.Row {
+	return table.Row{
+		strconv.Itoa(tr.Tokens),
+		strconv.Itoa(tr.Words),
+		strconv.Itoa(tr.Chars),
+		fmt.Sprintf("%q", tr.Sign),
+	}
 }
 
 func (p *pipeline) tokeniseStream(clips <-chan Result[string]) <-chan Result[TokenResult] {
@@ -96,16 +108,14 @@ func (p *pipeline) tokeniseStream(clips <-chan Result[string]) <-chan Result[Tok
 				res <- Result[TokenResult]{Error: err}
 				continue
 			}
-			sign := clip.Value
-			if len(sign) > SignLen {
-				sign = sign[:SignLen*3/4] + "..." + sign[len(sign)-SignLen/4-3:]
-			}
+			sign := GenerateSign(clip.Value)
 			strings.Fields(clip.Value)
 			value := Result[TokenResult]{Value: TokenResult{
 				Tokens: tokens,
 				Words:  len(strings.Fields(clip.Value)),
 				Chars:  len(clip.Value),
 				Sign:   sign,
+				Clip:   clip.Value,
 			}}
 			res <- value
 			cache.Put(clip.Value, value)
